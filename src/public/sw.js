@@ -1,6 +1,6 @@
 // Service Worker for Push Notifications
 const CACHE_NAME = "dicoding-story-v1";
-const urlsToCache = ["/", "/index.html", "/scripts/index.js", "/styles/styles.css"];
+const urlsToCache = ["/", "/index.html", "/scripts/index.js", "/styles/styles.css", "/manifest.json", "/favicon.png", "/images/logo.png", "/offline.html"];
 
 // Install event
 self.addEventListener("install", (event) => {
@@ -46,8 +46,44 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
-      // Return cached version or fetch from network
-      return response || fetch(event.request);
+      // Return cached version if available
+      if (response) {
+        return response;
+      }
+
+      // Clone the request
+      const fetchRequest = event.request.clone();
+
+      // Try to fetch from network
+      return fetch(fetchRequest)
+        .then((response) => {
+          // Check if valid response
+          if (!response || response.status !== 200 || response.type !== "basic") {
+            return response;
+          }
+
+          // Clone the response
+          const responseToCache = response.clone();
+
+          // Cache the fetched response
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+
+          return response;
+        })
+        .catch(() => {
+          // If both cache and network fail, return offline fallback for navigation
+          if (event.request.mode === "navigate") {
+            return caches.match("/offline.html");
+          }
+
+          // Return nothing for other resources that fail
+          return new Response("Network error happened", {
+            status: 408,
+            headers: { "Content-Type": "text/plain" },
+          });
+        });
     })
   );
 });

@@ -12,6 +12,7 @@ export default class HomePage {
         
         <div class="story-action" role="navigation" aria-label="Navigasi utama">
           <a href="#/add" class="btn btn-primary" aria-label="Tambah cerita baru">Tambah Cerita</a>
+          <a href="#/saved" class="btn btn-success" id="savedButton" style="display: none;" aria-label="Lihat cerita tersimpan">Cerita Tersimpan</a>
           <a href="#/notification" class="btn btn-info" id="notificationButton" style="display: none;" aria-label="Pengaturan notifikasi">Notifikasi</a>
           <a href="#/login" class="btn btn-secondary" id="loginButton" aria-label="Masuk ke akun">Login</a>
           <button class="btn btn-danger" id="logoutButton" style="display: none;" aria-label="Keluar dari akun">Logout</button>

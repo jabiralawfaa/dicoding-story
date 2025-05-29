@@ -16,15 +16,18 @@ class HomeView {
     const loginButton = document.querySelector("#loginButton");
     const logoutButton = document.querySelector("#logoutButton");
     const notificationButton = document.querySelector("#notificationButton");
+    const savedButton = document.querySelector("#savedButton");
 
     if (isSignedIn) {
       loginButton.style.display = "none";
       logoutButton.style.display = "inline-block";
       notificationButton.style.display = "inline-block";
+      savedButton.style.display = "inline-block";
     } else {
       loginButton.style.display = "inline-block";
       logoutButton.style.display = "none";
       notificationButton.style.display = "none";
+      savedButton.style.display = "none";
     }
   }
 
