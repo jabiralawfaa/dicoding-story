@@ -4,6 +4,18 @@ import "../styles/styles.css";
 // Leaflet CSS untuk peta
 import "leaflet/dist/leaflet.css";
 
+// Konfigurasi ikon Leaflet
+document.addEventListener("DOMContentLoaded", () => {
+  // Pastikan Leaflet sudah dimuat
+  if (typeof L !== "undefined") {
+    // Atur path default untuk ikon
+    L.Icon.Default.prototype.options.iconUrl = "/images/leaflet/marker-icon.svg";
+    L.Icon.Default.prototype.options.shadowUrl = "/images/leaflet/marker-shadow.svg";
+    L.Icon.Default.prototype.options.iconSize = [25, 41];
+    L.Icon.Default.prototype.options.shadowSize = [41, 41];
+  }
+});
+
 import App from "./pages/app";
 import NotificationHelper from "./utils/notification-helper";
 

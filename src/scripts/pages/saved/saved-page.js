@@ -27,6 +27,13 @@ export default class SavedPage {
   }
 
   async afterRender() {
+    // Konfigurasi ikon Leaflet jika tersedia
+    if (typeof L !== "undefined") {
+      L.Icon.Default.prototype.options.iconUrl = "/images/leaflet/marker-icon.svg";
+      L.Icon.Default.prototype.options.shadowUrl = "/images/leaflet/marker-shadow.svg";
+      L.Icon.Default.prototype.options.iconSize = [25, 41];
+      L.Icon.Default.prototype.options.shadowSize = [41, 41];
+    }
     const storiesContainer = document.querySelector("#saved-stories-list");
 
     // Fokus ke elemen main-content untuk aksesibilitas

@@ -1,17 +1,17 @@
-import DicodingStoryApi from '../../data/dicoding-story-api';
-import AuthHelper from '../../utils/auth-helper';
-import StoryModel from '../../model/story-model';
-import StoryPresenter from '../../presenter/story-presenter';
-import StoryView from '../../view/story-view';
-import { createStoryDetailTemplate } from '../templates/template-creator';
-import { getUrlId } from '../../routes/url-parser';
+import DicodingStoryApi from "../../data/dicoding-story-api";
+import AuthHelper from "../../utils/auth-helper";
+import StoryModel from "../../model/story-model";
+import StoryPresenter from "../../presenter/story-presenter";
+import StoryView from "../../view/story-view";
+import { createStoryDetailTemplate } from "../templates/template-creator";
+import { getUrlId } from "../../routes/url-parser";
 
 export default class DetailPage {
   constructor() {
     // Simpan referensi ke peta untuk dibersihkan nanti
     this.map = null;
   }
-  
+
   async render() {
     return `
       <section class="container">
@@ -29,31 +29,38 @@ export default class DetailPage {
   }
 
   async afterRender() {
+    // Konfigurasi ikon Leaflet jika tersedia
+    if (typeof L !== "undefined") {
+      L.Icon.Default.prototype.options.iconUrl = "/images/leaflet/marker-icon.svg";
+      L.Icon.Default.prototype.options.shadowUrl = "/images/leaflet/marker-shadow.svg";
+      L.Icon.Default.prototype.options.iconSize = [25, 41];
+      L.Icon.Default.prototype.options.shadowSize = [41, 41];
+    }
     // Tambahkan CSS untuk aksesibilitas
     this.addAccessibilityStyles();
-    
-    const storyContainer = document.querySelector('#story');
-    const mainContent = document.getElementById('main-content');
-    
+
+    const storyContainer = document.querySelector("#story");
+    const mainContent = document.getElementById("main-content");
+
     // Tambahkan event listener untuk membersihkan peta saat pengguna meninggalkan halaman
     const cleanupMap = () => {
       if (this.map) {
         this.map.remove();
         this.map = null;
-        console.log('Peta dibersihkan saat meninggalkan halaman detail');
+        console.log("Peta dibersihkan saat meninggalkan halaman detail");
       }
     };
-    
+
     // Event listener untuk saat pengguna meninggalkan halaman
-    window.addEventListener('hashchange', cleanupMap);
-    
+    window.addEventListener("hashchange", cleanupMap);
+
     // Fokus ke elemen main-content untuk aksesibilitas
     if (mainContent) {
       setTimeout(() => {
         mainContent.focus();
       }, 100);
     }
-    
+
     try {
       // Cek status login
       if (!AuthHelper.isUserSignedIn()) {
@@ -65,7 +72,7 @@ export default class DetailPage {
         `;
         return;
       }
-      
+
       // Ambil ID dari URL
       const id = getUrlId();
       if (!id) {
@@ -76,59 +83,60 @@ export default class DetailPage {
         `;
         return;
       }
-      
+
       // Inisialisasi Model, View, dan Presenter
       const storyModel = new StoryModel();
       const storyView = new StoryView({
         storiesContainer: storyContainer,
-        templateCreator: { createStoryDetailTemplate }
+        templateCreator: { createStoryDetailTemplate },
       });
-      
+
       // Tambahkan method untuk menampilkan detail cerita
       storyView.showStoryDetail = (story) => {
         storyContainer.innerHTML = createStoryDetailTemplate(story);
-        
+
         // Inisialisasi peta jika ada lokasi
         if (story.lat && story.lon) {
-          const mapContainer = document.querySelector('#detail-map');
-          
-          if (mapContainer && typeof L !== 'undefined') {
+          const mapContainer = document.querySelector("#detail-map");
+
+          if (mapContainer && typeof L !== "undefined") {
             // Bersihkan peta yang ada jika ada
             if (this.map) {
               this.map.remove();
             }
-            
+
             this.map = L.map(mapContainer).setView([story.lat, story.lon], 13);
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-              attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+              attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             }).addTo(this.map);
-            
+
             L.marker([story.lat, story.lon])
               .addTo(this.map)
-              .bindPopup(`
+              .bindPopup(
+                `
                 <div class="popup-content">
                   <h2>${story.name}</h2>
                   <p>${story.description}</p>
                 </div>
-              `)
+              `
+              )
               .openPopup();
           }
         }
       };
-      
+
       // Buat presenter
       const storyPresenter = new StoryPresenter({
         storyModel,
-        storyView
+        storyView,
       });
-      
+
       // Ambil token dan tampilkan detail cerita
       const { token } = AuthHelper.getAuth();
       await storyPresenter.showStoryDetail(id, token);
-      
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
       storyContainer.innerHTML = `
         <div class="error-state" role="alert" aria-live="assertive">
           <p>Terjadi kesalahan saat memuat cerita</p>
@@ -136,12 +144,12 @@ export default class DetailPage {
       `;
     }
   }
-  
+
   addAccessibilityStyles() {
     // Cek apakah style sudah ada
-    if (!document.getElementById('accessibility-styles')) {
-      const styleElement = document.createElement('style');
-      styleElement.id = 'accessibility-styles';
+    if (!document.getElementById("accessibility-styles")) {
+      const styleElement = document.createElement("style");
+      styleElement.id = "accessibility-styles";
       styleElement.textContent = `
         .skip-link {
           position: absolute;

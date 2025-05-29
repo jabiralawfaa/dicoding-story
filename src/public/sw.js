@@ -1,6 +1,18 @@
 // Service Worker for Push Notifications
-const CACHE_NAME = "dicoding-story-v1";
-const urlsToCache = ["/", "/index.html", "/scripts/index.js", "/styles/styles.css", "/manifest.json", "/favicon.png", "/images/logo.png", "/offline.html"];
+const CACHE_NAME = "dicoding-story-v2";
+const urlsToCache = [
+  "/",
+  "/index.html",
+  "/scripts/index.js",
+  "/styles/styles.css",
+  "/manifest.json",
+  "/favicon.png",
+  "/images/logo.png",
+  "/offline.html",
+  "/images/leaflet/marker-icon.svg",
+  "/images/leaflet/marker-shadow.svg",
+  "/images/leaflet/leaflet-custom.css",
+];
 
 // Install event
 self.addEventListener("install", (event) => {
@@ -67,7 +79,11 @@ self.addEventListener("fetch", (event) => {
 
           // Cache the fetched response
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
+            // Hanya cache request dengan skema http atau https
+            const requestUrl = new URL(event.request.url);
+            if (requestUrl.protocol === "http:" || requestUrl.protocol === "https:") {
+              cache.put(event.request, responseToCache);
+            }
           });
 
           return response;
