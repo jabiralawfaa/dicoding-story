@@ -79,6 +79,9 @@ class NotificationHelper {
       // Send subscription to server
       await this.sendSubscriptionToServer(subscription);
 
+      // Clear the disabled flag when user explicitly enables notifications
+      localStorage.removeItem("notificationsDisabled");
+
       return subscription;
     } catch (error) {
       console.error("Failed to subscribe to push notifications:", error);
@@ -132,6 +135,8 @@ class NotificationHelper {
 
       if (!subscription) {
         console.log("No subscription found");
+        // Still mark as disabled even if no subscription exists
+        localStorage.setItem("notificationsDisabled", "true");
         return;
       }
 
@@ -140,6 +145,9 @@ class NotificationHelper {
 
       // Notify server
       await this.sendUnsubscriptionToServer(subscription.endpoint);
+
+      // Mark that user has explicitly disabled notifications
+      localStorage.setItem("notificationsDisabled", "true");
 
       console.log("Successfully unsubscribed from push notifications");
     } catch (error) {
@@ -224,13 +232,24 @@ class NotificationHelper {
       // Register service worker
       await this.registerServiceWorker();
 
+      // Check if user has explicitly disabled notifications
+      const userDisabledNotifications = localStorage.getItem("notificationsDisabled") === "true";
+
+      if (userDisabledNotifications) {
+        console.log("User has disabled notifications, skipping auto-subscription");
+        return false;
+      }
+
       // Request notification permission
       const permissionGranted = await this.requestPermission();
 
       if (permissionGranted && AuthHelper.isUserSignedIn()) {
-        // Subscribe to push notifications
-        await this.subscribeToPush();
-        console.log("Push notifications initialized successfully");
+        // Only subscribe if user hasn't explicitly disabled notifications
+        const isCurrentlySubscribed = await this.isSubscribed();
+        if (!isCurrentlySubscribed) {
+          await this.subscribeToPush();
+          console.log("Push notifications initialized successfully");
+        }
       }
 
       return permissionGranted;
