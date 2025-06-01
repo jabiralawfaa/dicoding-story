@@ -1,2 +1,2 @@
-APP_URL=    https://dicoding-story.vercel.app/
+APP_URL=    https://dicoding-story-v2.vercel.app/
 MAP_SERVICE_API_KEY=<api_key>
