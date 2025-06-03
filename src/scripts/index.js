@@ -42,6 +42,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     navigationDrawer: document.querySelector("#navigation-drawer"),
   });
 
+  // Check if main content exists
+  if (!app.content) {
+    console.error("CRITICAL: Main content element #main-content not found. App cannot render.");
+    return;
+  }
+
   // Setup aksesibilitas
   setupAccessibility();
 
@@ -52,26 +58,34 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error("Failed to initialize push notifications:", error);
   }
 
-  await app.renderPage();
+  try {
+    await app.renderPage();
+  } catch (error) {
+    console.error("Error during initial page render:", error);
+  }
 
   window.addEventListener("hashchange", async () => {
     // Gunakan View Transition API jika tersedia
-    if (document.startViewTransition) {
-      document.startViewTransition(async () => {
+    try {
+      if (document.startViewTransition) {
+        document.startViewTransition(async () => {
+          await app.renderPage();
+          // Fokus ke konten utama setelah navigasi
+          const mainContent = document.querySelector("#main-content");
+          if (mainContent) {
+            mainContent.focus();
+          }
+        });
+      } else {
         await app.renderPage();
         // Fokus ke konten utama setelah navigasi
         const mainContent = document.querySelector("#main-content");
         if (mainContent) {
           mainContent.focus();
         }
-      });
-    } else {
-      await app.renderPage();
-      // Fokus ke konten utama setelah navigasi
-      const mainContent = document.querySelector("#main-content");
-      if (mainContent) {
-        mainContent.focus();
       }
+    } catch (error) {
+      console.error("Error during hashchange page render:", error);
     }
   });
 });
