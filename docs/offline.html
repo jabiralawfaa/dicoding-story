@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Dicoding Story - Platform berbagi cerita dengan foto dan lokasi" />
+    <meta name="theme-color" content="#2196f3" />
+    <link rel="shortcut icon" href="/favicon.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
+    <title>Offline - Dicoding Story</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        text-align: center;
+      }
+
+      header {
+        background-color: lightskyblue;
+        padding: 20px;
+      }
+
+      .brand-name {
+        font-size: 1.5rem;
+        font-weight: bold;
+        text-decoration: none;
+        color: #333;
+      }
+
+      main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+      }
+
+      .offline-icon {
+        font-size: 5rem;
+        margin-bottom: 1rem;
+      }
+
+      h1 {
+        margin-bottom: 1rem;
+      }
+
+      p {
+        margin-bottom: 2rem;
+        max-width: 600px;
+      }
+
+      .retry-button {
+        background-color: lightskyblue;
+        border: none;
+        color: #333;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .retry-button:hover {
+        background-color: #87cefa;
+      }
+
+      footer {
+        background-color: #333;
+        color: white;
+        padding: 1rem;
+        margin-top: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a class="brand-name" href="#/">Dicoding Story</a>
+    </header>
+
+    <main>
+      <div class="offline-icon">📶</div>
+      <h1>Anda Sedang Offline</h1>
+      <p>Maaf, Anda tidak dapat mengakses konten ini karena tidak ada koneksi internet. Silakan periksa koneksi Anda dan coba lagi.</p>
+      <button class="retry-button" onclick="window.location.reload()">Coba Lagi</button>
+    </main>
+
+    <footer>
+      <p>&copy; 2023 Dicoding Story - Submission Dicoding</p>
+    </footer>
+  </body>
+</html>

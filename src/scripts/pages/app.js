@@ -13,6 +13,11 @@ class App {
 
     this.#setupDrawer();
   }
+  
+  // Getter untuk mengakses content dari luar
+  get content() {
+    return this.#content;
+  }
 
   #setupDrawer() {
     this.#drawerButton.addEventListener("click", () => {
@@ -54,11 +59,25 @@ class App {
   }
 
   async renderPage() {
-    const url = getActiveRoute();
-    const page = new routes[url]();
+    if (!this.#content) {
+      console.error("CRITICAL: App's content element is null. Cannot render page.");
+      // Coba dapatkan elemen lagi, mungkin sudah dimuat sekarang
+      this.#content = document.querySelector("#main-content");
+      
+      if (!this.#content) {
+        console.error("CRITICAL: Still cannot find #main-content element after retry.");
+        return;
+      } else {
+        console.log("Found #main-content element after retry.");
+      }
+    }
 
-    // Gunakan View Transition API jika tersedia di browser
-    if (document.startViewTransition) {
+    try {
+      const url = getActiveRoute();
+      const page = new routes[url]();
+
+     // Gunakan View Transition API jika tersedia di browser
+     if (document.startViewTransition) {
       // Gunakan View Transition API untuk transisi halaman yang halus
       document.startViewTransition(async () => {
         this.#content.innerHTML = await page.render();
@@ -66,8 +85,11 @@ class App {
       });
     } else {
       // Fallback untuk browser yang tidak mendukung View Transition API
-      this.#content.innerHTML = await page.render();
-      await page.afterRender();
+        this.#content.innerHTML = await page.render();
+        await page.afterRender();
+      }
+    } catch (error) {
+      console.error("Error in App.renderPage:", error);
     }
   }
 }

@@ -1,0 +1,21 @@
+/* Custom Leaflet CSS to override default marker icons */
+.leaflet-default-icon-path {
+  background-image: url("/images/leaflet/marker-icon.svg");
+}
+
+.leaflet-default-shadow-path {
+  background-image: url("/images/leaflet/marker-shadow.svg");
+}
+
+/* Override Leaflet's default icon */
+.leaflet-marker-icon {
+  background-image: url("/images/leaflet/marker-icon.svg");
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.leaflet-marker-shadow {
+  background-image: url("/images/leaflet/marker-shadow.svg");
+  background-size: contain;
+  background-repeat: no-repeat;
+}
