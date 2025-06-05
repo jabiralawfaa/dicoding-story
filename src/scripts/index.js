@@ -41,17 +41,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   const mainContent = document.querySelector("#main-content");
   const drawerButton = document.querySelector("#drawer-button");
   const navigationDrawer = document.querySelector("#navigation-drawer");
-  
+
   // Periksa apakah semua elemen yang diperlukan sudah ada
   if (!mainContent) {
     console.error("CRITICAL: Main content element #main-content not found. App cannot render.");
     return;
   }
-  
+
   if (!drawerButton || !navigationDrawer) {
     console.error("CRITICAL: Navigation elements not found. App may not function properly.");
   }
-  
+
   const app = new App({
     content: mainContent,
     drawerButton: drawerButton,
@@ -61,18 +61,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Setup aksesibilitas
   setupAccessibility();
 
-  // Initialize push notifications
-  try {
-    await NotificationHelper.initializeNotifications();
-  } catch (error) {
-    console.error("Failed to initialize push notifications:", error);
-  }
-
+  // Render halaman terlebih dahulu
   try {
     await app.renderPage();
   } catch (error) {
     console.error("Error during initial page render:", error);
   }
+
+  // Initialize push notifications setelah halaman dirender
+  setTimeout(async () => {
+    try {
+      await NotificationHelper.initializeNotifications();
+    } catch (error) {
+      console.error("Failed to initialize push notifications:", error);
+    }
+  }, 1000); // Delay 1 detik untuk memastikan halaman sudah dirender
 
   window.addEventListener("hashchange", async () => {
     // Gunakan View Transition API jika tersedia
