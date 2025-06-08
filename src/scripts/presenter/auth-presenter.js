@@ -3,7 +3,7 @@ class AuthPresenter {
     this.authModel = authModel;
     this.authView = authView;
   }
-
+ 
   async login({ email, password }) {
     try {
       this.authView.showLoading();

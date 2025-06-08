@@ -1,6 +1,6 @@
 import DicodingStoryApi from "../data/dicoding-story-api";
 import DataSource from "../data/data-source";
-
+  
 class StoryModel {
   async getAllStories(options) {
     try {

@@ -8,7 +8,7 @@ export default class LoginPage {
       <section class="container">
         <h1 class="page-title">Login</h1>
         
-        <div class="form-container">
+       <div class="form-container">
           <form id="loginForm">
             <div class="form-group">
               <label for="email">Email</label>

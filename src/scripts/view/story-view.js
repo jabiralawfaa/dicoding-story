@@ -57,24 +57,43 @@ class StoryView {
   showStoriesOnMap(stories) {
     if (!this.mapContainer) return;
     
-    // Implementasi peta menggunakan Leaflet
-    const map = L.map(this.mapContainer).setView([-2.548926, 118.0148634], 5);
+    // Periksa status koneksi sebelum mencoba memuat peta
+    if (!navigator.onLine) {
+      this.mapContainer.innerHTML = `
+        <div class="offline-state">
+          <p>Peta tidak tersedia saat offline. Silakan periksa koneksi internet Anda.</p>
+        </div>
+      `;
+      return;
+    }
     
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    }).addTo(map);
+    try {
+      // Implementasi peta menggunakan Leaflet
+      const map = L.map(this.mapContainer).setView([-2.548926, 118.0148634], 5);
+      
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(map);
 
-    stories
-      .filter(story => story.lat && story.lon)
-      .forEach(story => {
-        L.marker([story.lat, story.lon])
-          .addTo(map)
-          .bindPopup(`
-            <h3>${story.name}</h3>
-            <p>${story.description}</p>
-          `)
-          .openPopup();
-      });
+      stories
+        .filter(story => story.lat && story.lon)
+        .forEach(story => {
+          L.marker([story.lat, story.lon])
+            .addTo(map)
+            .bindPopup(`
+              <h3>${story.name}</h3>
+              <p>${story.description}</p>
+            `)
+            .openPopup();
+        });
+    } catch (error) {
+      console.error('Error loading map:', error);
+      this.mapContainer.innerHTML = `
+        <div class="error-state">
+          <p>Gagal memuat peta. Silakan coba lagi nanti.</p>
+        </div>
+      `;
+    }
   }
 
   showStoryLocationOnMap(story) {
@@ -83,21 +102,36 @@ class StoryView {
     const detailMap = document.getElementById('detail-map');
     if (!detailMap) return;
     
-    const map = L.map(detailMap).setView([story.lat, story.lon], 13);
+    // Periksa status koneksi sebelum mencoba memuat peta
+    if (!navigator.onLine) {
+      // Tidak perlu menambahkan pesan di sini karena sudah ditangani di template
+      return;
+    }
     
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    }).addTo(map);
+    try {
+      const map = L.map(detailMap).setView([story.lat, story.lon], 13);
+      
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(map);
 
-    L.marker([story.lat, story.lon])
-      .addTo(map)
-      .bindPopup(`
-        <div class="popup-content">
-          <h2>${story.name}</h2>
-          <p>${story.description}</p>
+      L.marker([story.lat, story.lon])
+        .addTo(map)
+        .bindPopup(`
+          <div class="popup-content">
+            <h2>${story.name}</h2>
+            <p>${story.description}</p>
+          </div>
+        `)
+        .openPopup();
+    } catch (error) {
+      console.error('Error loading map:', error);
+      detailMap.innerHTML = `
+        <div class="error-state">
+          <p>Gagal memuat peta. Silakan coba lagi nanti.</p>
         </div>
-      `)
-      .openPopup();
+      `;
+    }
   }
 }
 

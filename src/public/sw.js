@@ -1,5 +1,5 @@
-// Service Worker for Push Notifications
-const CACHE_NAME = "dicoding-story-v2";
+// Service Worker for Push Notifications and Offline Support
+const CACHE_NAME = "dicoding-story-v3";
 const urlsToCache = [
   "/",
   "/index.html",
@@ -12,6 +12,16 @@ const urlsToCache = [
   "/images/leaflet/marker-icon.svg",
   "/images/leaflet/marker-shadow.svg",
   "/images/leaflet/leaflet-custom.css",
+  // Tambahkan file CSS dan JS penting
+  "/assets/index.css",
+  "/assets/index.js",
+  // Tambahkan aset Leaflet
+  "/assets/leaflet.css",
+  "/assets/leaflet.js",
+  // Tambahkan font dan ikon
+  "/assets/fonts/font-awesome.css",
+  // Tambahkan gambar placeholder
+  "/images/placeholder.png",
 ];
 
 // Install event
@@ -56,53 +66,115 @@ self.addEventListener("activate", (event) => {
 
 // Fetch event
 self.addEventListener("fetch", (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      // Return cached version if available
-      if (response) {
-        return response;
-      }
+  const requestUrl = new URL(event.request.url);
 
-      // Clone the request
-      const fetchRequest = event.request.clone();
+  // Strategi berbeda untuk API dan aset statis
+  const isApiRequest = requestUrl.origin === "https://story-api.dicoding.dev";
+  const isStaticAsset = event.request.url.match(/\.(css|js|png|jpg|jpeg|svg|gif|ico|woff|woff2|ttf|eot)$/);
 
-      // Try to fetch from network
-      return fetch(fetchRequest)
-        .then((response) => {
-          // Check if valid response
-          if (!response || response.status !== 200 || response.type !== "basic") {
-            return response;
-          }
-
-          // Clone the response
-          const responseToCache = response.clone();
-
-          // Cache the fetched response
-          caches.open(CACHE_NAME).then((cache) => {
-            // Hanya cache request dengan skema http atau https
-            const requestUrl = new URL(event.request.url);
-            if (requestUrl.protocol === "http:" || requestUrl.protocol === "https:") {
-              cache.put(event.request, responseToCache);
-            }
-          });
-
-          return response;
-        })
-        .catch(() => {
-          // If both cache and network fail, return offline fallback for navigation
-          if (event.request.mode === "navigate") {
-            return caches.match("/offline.html");
-          }
-
-          // Return nothing for other resources that fail
-          return new Response("Network error happened", {
-            status: 408,
-            headers: { "Content-Type": "text/plain" },
-          });
-        });
-    })
-  );
+  if (isApiRequest) {
+    // Network-first untuk API requests
+    event.respondWith(networkFirstStrategy(event.request));
+  } else if (isStaticAsset) {
+    // Cache-first untuk aset statis
+    event.respondWith(cacheFirstStrategy(event.request));
+  } else {
+    // Strategi default untuk request lainnya
+    event.respondWith(defaultStrategy(event.request));
+  }
 });
+
+// Strategi Cache-First: Coba cache dulu, jika tidak ada baru ke network
+async function cacheFirstStrategy(request) {
+  const cachedResponse = await caches.match(request);
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+
+  try {
+    const networkResponse = await fetch(request);
+    await updateCache(request, networkResponse.clone());
+    return networkResponse;
+  } catch (error) {
+    // Jika gagal mengambil dari network dan ini adalah gambar, kembalikan placeholder
+    if (request.url.match(/\.(png|jpg|jpeg|gif|svg)$/)) {
+      return caches.match("/images/placeholder.png");
+    }
+
+    // Jika ini adalah CSS atau JS, kembalikan respons kosong yang valid
+    if (request.url.match(/\.(css|js)$/)) {
+      return new Response("/* Offline fallback */", {
+        headers: { "Content-Type": request.url.endsWith(".css") ? "text/css" : "application/javascript" },
+      });
+    }
+
+    throw error;
+  }
+}
+
+// Strategi Network-First: Coba network dulu, jika gagal baru ke cache
+async function networkFirstStrategy(request) {
+  try {
+    const networkResponse = await fetch(request);
+    await updateCache(request, networkResponse.clone());
+    return networkResponse;
+  } catch (error) {
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+
+    // Jika request adalah navigasi, kembalikan halaman offline
+    if (request.mode === "navigate") {
+      return caches.match("/offline.html");
+    }
+
+    throw error;
+  }
+}
+
+// Strategi Default: Kombinasi dari cache dan network
+async function defaultStrategy(request) {
+  try {
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      // Refresh cache di background
+      fetch(request)
+        .then((networkResponse) => updateCache(request, networkResponse))
+        .catch((error) => console.log("Background fetch failed:", error));
+
+      return cachedResponse;
+    }
+
+    const networkResponse = await fetch(request);
+    await updateCache(request, networkResponse.clone());
+    return networkResponse;
+  } catch (error) {
+    // Jika request adalah navigasi, kembalikan halaman offline
+    if (request.mode === "navigate") {
+      return caches.match("/offline.html");
+    }
+
+    // Return error response untuk request lainnya
+    return new Response("Network error happened", {
+      status: 408,
+      headers: { "Content-Type": "text/plain" },
+    });
+  }
+}
+
+// Helper untuk update cache
+async function updateCache(request, response) {
+  if (!response || response.status !== 200 || response.type !== "basic") {
+    return;
+  }
+
+  const requestUrl = new URL(request.url);
+  if (requestUrl.protocol === "http:" || requestUrl.protocol === "https:") {
+    const cache = await caches.open(CACHE_NAME);
+    cache.put(request, response);
+  }
+}
 
 // Push event handler
 self.addEventListener("push", (event) => {

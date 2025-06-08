@@ -13,7 +13,7 @@ class StoryPresenter {
         this.storyView.showError(response.message);
         return;
       }
-      
+       
       this.storyView.showStories(response.listStory);
     } catch (error) {
       this.storyView.showError('Terjadi kesalahan saat memuat cerita');

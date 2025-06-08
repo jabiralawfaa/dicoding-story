@@ -25,7 +25,7 @@ export default class SavedPage {
       </section>
     `;
   }
-
+ 
   async afterRender() {
     // Konfigurasi ikon Leaflet jika tersedia
     if (typeof L !== "undefined") {

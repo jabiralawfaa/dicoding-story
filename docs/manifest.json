@@ -4,8 +4,8 @@
   "description": "Platform berbagi cerita dengan foto dan lokasi",
   "start_url": "/index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2196f3",
+  "background_color": "#f5f5dc",
+  "theme_color": "#333333",
   "icons": [
     {
       "src": "/favicon.png",
